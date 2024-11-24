@@ -9,7 +9,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useInView } from 'react-intersection-observer';
 import { stocksApi } from 'src/Shared/services/apis/stocks-api.service';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import { debounce } from 'lodash';
@@ -17,6 +16,7 @@ import { debounce } from 'lodash';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { useAlert } from 'src/Shared/hooks/alert/useAlert';
 import Alert from 'src/Shared/components/core-ui/alert/alert.component';
+import { useNavigate } from 'react-router-dom';
 
 const StocksListContainer = () => {
   const [stockList, setStockList] = useState<any[]>([]);
@@ -30,6 +30,8 @@ const StocksListContainer = () => {
   const { ref, inView } = useInView();
 
   const { isOpenAlert, setIsOpenAlert, alertText, showAlert } = useAlert();
+
+  const navigate = useNavigate();
 
   const { data, isLoading, failureReason } = useStocks({
     limit: 100,
@@ -46,9 +48,8 @@ const StocksListContainer = () => {
 
   useEffect(() => {
     if (data) {
-      console.log({ data });
       data?.results.length > 0 ? setStockList(data?.results) : setStockList([]);
-      data?.next_url && setNextUrl(data?.next_url?.split('=')[1]);
+      data?.next_url ? setNextUrl(data?.next_url?.split('=')[1]) : setNextUrl(null);
       setSearchLoading(false);
     }
   }, [data]);
@@ -56,11 +57,7 @@ const StocksListContainer = () => {
   const loadMoreStocks = async () => {
     setIsLoadingMore(true);
     stocksApi
-      .searchStocks({
-        limit: 100,
-        cursor: nextUrl,
-        search: searchQuery
-      })
+      .searchStocks({ limit: 100, cursor: nextUrl, search: searchQuery })
       .then((response) => {
         setStockList((prev) => [...prev, ...response.results]);
         setNextUrl(response.next_url.split('=')[1]);
@@ -98,18 +95,16 @@ const StocksListContainer = () => {
     <>
       <StyledAppBar>
         <Toolbar>
-          <NasdaqLogo style={{ width: '35px', height: '35px' }} />
+          <NasdaqLogo
+            style={{ width: '35px', height: '35px', cursor: 'pointer' }}
+            onClick={() => navigate('/')}
+          />
 
           <OutlinedInput
             placeholder={'Search stocks by name or ticker'}
             label=""
             endAdornment={
-              <InputAdornment
-                sx={{
-                  cursor: 'pointer'
-                }}
-                position="end"
-              >
+              <InputAdornment position="end">
                 {searchLoading ? <CircularProgress size={20} /> : <SearchIcon />}
               </InputAdornment>
             }
@@ -124,12 +119,7 @@ const StocksListContainer = () => {
 
       <StyledStocksContainer container spacing={2}>
         {isLoading ? (
-          <Box
-            sx={{
-              width: '40px',
-              margin: '200px auto'
-            }}
-          >
+          <Box sx={{ width: '40px', margin: '200px auto' }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -146,12 +136,7 @@ const StocksListContainer = () => {
         )}
       </StyledStocksContainer>
 
-      <Box
-        sx={{
-          width: '120px',
-          margin: '24px auto'
-        }}
-      >
+      <Box sx={{ width: '120px', margin: '24px auto' }}>
         {stockList.length > 0 ? (
           nextUrl ? (
             <Button variant="outlined" ref={ref} onClick={() => loadMoreStocks()}>

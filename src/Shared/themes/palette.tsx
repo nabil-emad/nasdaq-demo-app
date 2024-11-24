@@ -47,7 +47,7 @@ const Palette = () => {
       // },
       //   divider: paletteColor.grey[200],
       background: {
-        default: '#F2F4F7'
+        default: '#fff'
       },
       grey: {
         50: '#F8F9FA',
