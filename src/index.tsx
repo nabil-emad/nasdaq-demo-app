@@ -1,19 +1,39 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+
+import AppProvider from './Shared/context';
 import reportWebVitals from './reportWebVitals';
+import { useRoutes } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { APP_ROUTES } from './Shared/config/routes.config';
+import { StocksRoutesConfig } from './Modules/StockModule/shared/config/stocks-routes.config';
+import { StrictMode } from 'react';
+import CustomTheme from './Shared/themes';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+
+const App = () => {
+  const routes = useRoutes([
+    {
+      index: true,
+      element: <Navigate to={APP_ROUTES.STOCKS_MODULE.FULL_PATH} />
+    },
+    {
+      path: APP_ROUTES.STOCKS_MODULE.FULL_PATH,
+      children: StocksRoutesConfig
+    }
+  ]);
+
+  return routes;
+};
+
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  // <StrictMode>
+  <AppProvider>
+    <CustomTheme>
+      <App />
+    </CustomTheme>
+  </AppProvider>
+  // </StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
